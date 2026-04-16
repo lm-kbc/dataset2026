@@ -162,9 +162,7 @@ contain at least 3 fields to be used by the evaluation script:
 
 - ``SubjectEntity``: the subject entity (string)
 - ``Relation``: the relation (string)
-- ``ObjectEntities``: the predicted object entity strings
-- ``ObjectEntitiesID``: the predicted object entity IDs, which should be a list
-  of Wikidata IDs (strings).
+- ``ObjectEntities``: the predicted object entity strings (list of strings)
 
 This is an example of how to write a prediction file:
 
@@ -175,21 +173,18 @@ import json
 predictions = [
     {
         "SubjectEntity": "Dominican republic",
-        "Relation": "CountryBordersWithCountry",
-        "ObjectEntities": ["Haiti", "Venezuela", "United States", "Germany"],
-        "ObjectEntitiesID": ["Q790", "Q717", "Q30", "Q183"]
+        "Relation": "countryLandBordersCountry",
+        "ObjectEntities": ["Haiti"]
     },
     {
         "SubjectEntity": "Jiaxing Stadium in Jiaxing",
         "Relation": "hasCapacity",
-        "ObjectEntities": ["35000"],
-        "ObjectEntitiesID": ["35000"]
+        "ObjectEntities": ["35000"]
     },
     {
         "SubjectEntity": "Mauritius",
-        "Relation": "CountryBordersWithCountry",
-        "ObjectEntities": [],
-        "ObjectEntitiesID": []
+        "Relation": "countryLandBordersCountry",
+        "ObjectEntities": []
     }
 
 ]
