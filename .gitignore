@@ -43,3 +43,6 @@ tmp/
 
 slurm_*.sh
 output/
+
+# Private test ground truth
+data/test_gt.jsonl
