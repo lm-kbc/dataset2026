@@ -1,12 +1,12 @@
-# LM-KBC: Knowledge Base Construction from Pre-trained Language Models (5th Edition)
+# AKBC Shared Task 2026: Knowledge Base Construction from Language Models (5th Edition)
 
-This repository hosts data for the LM-KBC challenge at ISWC
-2026 (https://lm-kbc.github.io/challenge2026/).
+This repository hosts data for the [AKBC Shared Task](https://lm-kbc.github.io/challenge2026/) at [AKBC](https://www.akbc.ws/2026/) / [EMNLP 2026](https://2026.emnlp.org/) in Budapest.
 
 This repository contains:
 
-- The dataset for the challenge
-- Evaluation script
+- The [dataset](data/) for the shared task
+- [Evaluation script](evaluate.py)
+- [Baseline code](models/)
 - Instructions for submitting your predictions
 
 ## Table of contents
@@ -18,30 +18,17 @@ This repository contains:
 5. [Getting started](#getting-started)
     - [Setup](#setup)
     - [How to structure your prediction file](#how-to-structure-your-prediction-file)
-    - [Submit your predictions to CodaLab](#submit-your-predictions-to-codalab)
+    - [Submit your predictions](#submit-your-predictions)
 
 ## News
 
-- Release of dataset
+- **April 2026**: Release of dataset, baseline, and evaluation script
 
 ## Challenge overview
 
-Pretrained language models (LMs) like ChatGPT have advanced a range of semantic
-tasks and have also shown promise for
-knowledge extraction from the models itself. Although several works have
-explored this ability in a setting called
-probing or prompting, the viability of knowledge base construction from LMs
-remains under-explored. In this edition
-of this challenge, we invite participants to build actual disambiguated
-knowledge bases from LMs, for given subjects and
-relations. In crucial difference to existing probing benchmarks like
-LAMA ([Petroni et al., 2019](https://arxiv.org/pdf/1909.01066.pdf)), we make no
-simplifying assumptions on relation
-cardinalities, i.e., a subject-entity can stand in relation with zero, one, or
-many object-entities.
+Pretrained language models (LMs) contain a substantial amount of factual knowledge. Turning that knowledge into reliable knowledge base entries, however, is much harder than answering a single factual question. In this shared task, we invite participants to build knowledge bases from LMs for given subjects and relations. In crucial difference to existing probing benchmarks like LAMA ([Petroni et al., 2019](https://arxiv.org/pdf/1909.01066.pdf)), we make no simplifying assumptions on relation cardinalities, i.e., a subject-entity can stand in relation with zero, one, or many object-entities.
 
-Unlike earlier editions, this version does **not require entity disambiguation**. Instead, we
-evaluate the predicted object strings directly using string match metrics.
+Unlike earlier editions, this version does **not require entity disambiguation**. Predictions are evaluated as **strings** using normalization and alias matching.
 
 > Formally, given the input subject-entity (s) and relation (r), the task is to
 > predict all the correct
@@ -110,13 +97,17 @@ Number of unique subject-entities in the data splits.
 
 ## Evaluation metrics
 
-We evaluate the predictions using macro precision, recall, and F1-score.
-See the evaluation script ([evaluate.py](evaluate.py)) for more details.
+We evaluate predictions using **macro precision, recall, and F1-score**.
+
+For **string relations**, predicted strings are normalized (lowercased, diacritics removed, punctuation stripped) and matched against the ground-truth label and its known aliases.
+For **numeric relations** (`hasCapacity`, `hasArea`), a prediction is correct if it falls within **5% relative tolerance** of the ground-truth value.
+
+See the evaluation script ([evaluate.py](evaluate.py)) for details.
 
 ```bash
 python evaluate.py \
   -g data/val.jsonl \
-  -p data/testrun-XYZ.jsonl
+  -p your_predictions.jsonl
 ```
 
 Parameters: ``-g`` (the ground truth file), ``-p`` (the prediction file).
@@ -149,10 +140,8 @@ Parameters: ``-g`` (the ground truth file), ``-p`` (the prediction file).
    in [How to structure your prediction file](#how-to-structure-your-prediction-file)).
 4. Evaluate your predictions using the evaluation script
    (see [Evaluation metrics](#evaluation-metrics)).
-5. Submit your solutions to the organizers
-   (see [Call for Participants](https://lm-kbc.github.io/challenge2026/#call-for-participants)),
-   and/or submit your predictions to CodaLab
-   (see [Submit your predictions to CodaLab](#submit-your-predictions-to-codalab)).
+5. Submit your predictions
+   (see [Submit your predictions](#submit-your-predictions)).
 
 ### How to structure your prediction file
 
@@ -196,7 +185,8 @@ with open(fp, "w") as f:
         f.write(json.dumps(pred) + "\n")
 ```
 
-### Submit your predictions to CodaLab
+### Submit your predictions
 
-To participate in the competition and join the leaderboard, sign up for your team account at [CodaLab](https://codalab.lisn.upsaclay.fr).
-Then register for the competition and submit your predictions at Participate -> Submit / View Results.
+Submit your system paper via [OpenReview](https://openreview.net/group?id=EMNLP/2026/Workshop/LM-KBC_Shared_Task).
+
+For the leaderboard, submit your predictions to CodaLab (link TBA).
