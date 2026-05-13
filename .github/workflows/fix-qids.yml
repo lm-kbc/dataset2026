@@ -2,6 +2,9 @@ name: Fix Q-IDs in SubjectEntity
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - copilot/replace-q-ids-with-wikipedia-labels
 
 jobs:
   fix-qids:
