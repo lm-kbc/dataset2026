@@ -1,0 +1,32 @@
+name: Fix Q-IDs in SubjectEntity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-qids:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch Wikipedia labels and fix data files
+        run: python fix_qids.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/train.jsonl data/val.jsonl data/test.jsonl
+          git diff --cached --quiet || git commit -m "Replace Q-IDs in SubjectEntity with Spanish Wikipedia labels"
+          git push
