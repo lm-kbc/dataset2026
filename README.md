@@ -14,15 +14,23 @@ This repository contains:
 1. [News](#news)
 2. [Challenge overview](#challenge-overview)
 3. [Dataset](#dataset)
-4. [Evaluation metrics](#evaluation-metrics)
-5. [Getting started](#getting-started)
+4. [Relation definitions](#relation-definitions)
+5. [Evaluation metrics](#evaluation-metrics)
+6. [Getting started](#getting-started)
     - [Setup](#setup)
     - [How to structure your prediction file](#how-to-structure-your-prediction-file)
     - [Submit your predictions](#submit-your-predictions)
 
 ## News
 
-- **April 2026**: Release of dataset, baseline, and evaluation script
+- **May 2026**: Dataset cleanup release. Changes participants should be aware of:
+    - Object alias sets are now richer per entity (full Latin-language label + aliases pulled from Wikidata), giving the evaluator more matching surface area. Non-Latin scripts, social-media handles (`@...`), ordinal abbreviations (`POTUS 45`), Wikipedia list articles, and orphaned name suffixes (`Jr.`/`Sr.`) have been filtered out.
+    - Subjects that previously contained raw Q-IDs (`"Q5847811 in Lima"`) are replaced with the resolved Wikidata label (`"Estadio Caballeros del Deporte in Lima"`).
+    - The val row for `"Ireland" (hasArea)` is now labeled `"Island of Ireland"` to disambiguate it from the Republic of Ireland used elsewhere in the dataset.
+    - Five `hasArea` values were stored in the wrong unit (hectares or square miles) and have been corrected to km²: Isle of Bute, South Uist, Nantucket, Molokai, Bequia.
+    - One duplicate row (`United Kingdom`, `countryLandBordersCountry`) was removed from `test.jsonl`; the test set now has 477 rows instead of 478.
+    - Six relations now have explicit definitions ([§ Relation definitions](#relation-definitions)) clarifying scope (e.g. land-only borders, total country area, city-granularity death location, distinct predecessor/successor awards).
+- **April 2026**: Release of dataset, baseline, and evaluation script.
 
 ## Challenge overview
 
@@ -52,10 +60,10 @@ Number of unique subject-entities in the data splits.
 <tbody>
     <tr>
         <td>countryLandBordersCountry</td>
-        <td>68</td>
+        <td>67</td>
         <td>68</td>
         <td>67</td>
-        <td>Null values possible</td>
+        <td>Null values possible; <em>land</em> borders only</td>
     </tr>
     <tr>
         <td>personHasCityOfDeath</td>
@@ -94,6 +102,22 @@ Number of unique subject-entities in the data splits.
     </tr>
 </tbody>
 </table>
+
+## Relation definitions
+
+These are the precise scopes used when constructing the ground truth. Models will be evaluated against these definitions, so participants should target them rather than a generic interpretation.
+
+- **`countryLandBordersCountry`** — countries (or comparable territories) that share a **land** border with the subject. Maritime borders (e.g. Russia–Japan, Samoa–USA) are **excluded**. Island countries without a land border have an empty answer set. Includes only currently-recognised states; deprecated/disputed border statements on Wikidata are not considered.
+
+- **`personHasCityOfDeath`** — the **city** where the person died. Granularity is the city, not the country or region. If the person is still living or no city is known, the answer is empty.
+
+- **`hasCapacity`** — the **maximum spectator capacity** of the venue, expressed as an integer **number of people**. For stadiums and arenas this corresponds to Wikidata's `P1083` (maximum capacity). When multiple capacities exist (seated vs total, before/after renovation), the **highest published capacity** is used.
+
+- **`awardWonBy`** — entities that have received the specific award identified by the subject. Predecessor or successor awards (e.g. *Medal of Freedom* vs *Presidential Medal of Freedom*) are **distinct** and not bundled. Some awards have hundreds of recipients; participants should expect large object sets.
+
+- **`companyTradesAtStockExchange`** — the stock exchange(s) on which the company's shares are publicly traded. Multiple listings are possible. Subsidiaries that are not separately listed have an empty answer set.
+
+- **`hasArea`** — the surface area of the subject geographic entity, in **square kilometres** (km²). For countries, the **total area** (land + inland water) is used, matching the Wikidata preferred-rank value for `P2046`. Areas reported on Wikidata in hectares, square miles, etc. are converted to km².
 
 ## Evaluation metrics
 

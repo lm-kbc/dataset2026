@@ -46,3 +46,11 @@ output/
 
 # Private test ground truth
 data/test_gt.jsonl
+
+# Local-only rebuild utilities (not part of the released dataset repo)
+scripts/
+data_rebuilt/
+CLAUDE.md
+
+# Wikidata response cache (scripts/build_labels.py)
+.wikidata_cache/
