@@ -69,20 +69,41 @@ def numeric_true_positives(preds: List[str], gts: List[List[str]], tolerance: fl
 
 
 def string_true_positives(preds: List[str], gts: List[List[str]]) -> int:
-    tp = 0
+    """Count true positives via maximum-cardinality bipartite matching between
+    unique predictions and gold entities. A prediction matches a gold entity if
+    the prediction's normalized form is in the gold entity's normalized alias
+    set. Each prediction matches at most one gold and vice versa. Bipartite
+    matching is used (rather than first-fit greedy) so the score is independent
+    of prediction iteration order."""
     gt_alias_sets = [
         {normalize_string(alias) for alias in aliases}
         for aliases in gts
     ]
-    matched_gts = set()
-    for pred in preds:
-        norm_pred = normalize_string(pred)
-        for i, alias_set in enumerate(gt_alias_sets):
-            if i not in matched_gts and norm_pred in alias_set:
-                tp += 1
-                matched_gts.add(i)
-                break
-    return tp
+    unique_preds = list({normalize_string(p) for p in preds if isinstance(p, str)})
+
+    # Adjacency: for each prediction index, the set of gold indices it can match.
+    adj: List[set] = [
+        {j for j, gs in enumerate(gt_alias_sets) if np in gs}
+        for np in unique_preds
+    ]
+
+    # Maximum bipartite matching via augmenting paths (Kuhn's algorithm).
+    match_gold_to_pred: dict = {}
+
+    def try_augment(p: int, visited: set) -> bool:
+        for g in adj[p]:
+            if g in visited:
+                continue
+            visited.add(g)
+            if g not in match_gold_to_pred or try_augment(match_gold_to_pred[g], visited):
+                match_gold_to_pred[g] = p
+                return True
+        return False
+
+    for p in range(len(unique_preds)):
+        try_augment(p, set())
+
+    return len(match_gold_to_pred)
 
 
 def precision(preds: List[str], gts: List[List[str]], rel_type: str, tolerance: float = 0.05) -> float:
@@ -133,8 +154,25 @@ def evaluate_per_sr_pair(pred_rows, gt_rows, rel_types: Dict[str, str], toleranc
         if gts and isinstance(gts[0], str):
             gts = [[g] for g in gts]
 
-        # Deduplicate predictions
-        preds = list(set(preds))
+        # Predictions are expected as List[str]. Tolerate one level of nesting
+        # by taking the first element of any inner list; drop entries that are
+        # neither strings nor non-empty lists. Deduplicate by normalized form
+        # so that submitting the same answer twice does not inflate denominators.
+        flat: List[str] = []
+        seen: set = set()
+        for p in preds:
+            if isinstance(p, list):
+                if not p:
+                    continue
+                p = p[0]
+            if not isinstance(p, str):
+                continue
+            key = normalize_string(p)
+            if key in seen:
+                continue
+            seen.add(key)
+            flat.append(p)
+        preds = flat
 
         rel_type = rel_types.get(rel, "string")
         tp = true_positives(preds, gts, rel_type=rel_type, tolerance=tolerance)
