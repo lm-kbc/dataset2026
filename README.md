@@ -213,4 +213,6 @@ with open(fp, "w") as f:
 
 Submit your system paper via [OpenReview](https://openreview.net/group?id=EMNLP/2026/Workshop/LM-KBC_Shared_Task).
 
-For the leaderboard, submit your predictions to CodaLab (link TBA).
+For the validation leaderboard, submit your predictions to [Codabench (validation)](https://www.codabench.org/competitions/16267/).
+
+The test leaderboard will be released together with the test data.
