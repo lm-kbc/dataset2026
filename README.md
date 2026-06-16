@@ -18,6 +18,7 @@ This repository contains:
 5. [Evaluation metrics](#evaluation-metrics)
 6. [Getting started](#getting-started)
     - [Setup](#setup)
+    - [Baselines](#baselines)
     - [How to structure your prediction file](#how-to-structure-your-prediction-file)
     - [Submit your predictions](#submit-your-predictions)
 
@@ -166,6 +167,31 @@ Parameters: ``-g`` (the ground truth file), ``-p`` (the prediction file).
    (see [Evaluation metrics](#evaluation-metrics)).
 5. Submit your predictions
    (see [Submit your predictions](#submit-your-predictions)).
+
+### Baselines
+
+#### Baseline: Qwen3.5-9B
+
+Config
+file: [configs/baseline-qwen-3.5-9b.yaml](configs/baseline-qwen-3.5-9b.yaml)
+
+```bash
+python baseline.py -c configs/baseline-qwen-3.5-9b.yaml -i data/val.jsonl
+python evaluate.py -p output/baseline-qwen-3.5-9b.jsonl -g data/val.jsonl
+```
+
+Results (validation, Participant lm-kbc, Submission ID 725748):
+
+```text
+                              macro-p  macro-r  macro-f1  micro-p  micro-r  micro-f1  avg. #preds  #empty preds
+awardWonBy                      0.182    0.047     0.069    0.176    0.032     0.055       27.300             0
+companyTradesAtStockExchange    0.322    0.687     0.320    0.265    0.506     0.348        1.510             0
+countryLandBordersCountry       0.700    0.916     0.679    0.866    0.899     0.882        2.735             0
+hasArea                         0.310    0.320     0.310    0.310    0.313     0.312        1.000             0
+hasCapacity                     0.100    0.100     0.100    0.100    0.100     0.100        1.000             0
+personHasCityOfDeath            0.160    0.610     0.160    0.158    0.291     0.205        1.010             0
+*** All Relations ***           0.290    0.490     0.284    0.336    0.154     0.211        1.906             0
+```
 
 ### How to structure your prediction file
 
