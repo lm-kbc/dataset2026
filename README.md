@@ -24,6 +24,12 @@ This repository contains:
 
 ## News
 
+- **July 2026**: Ground-truth quality release + evaluator update. **Splits and `test.jsonl` are unchanged** — only gold answer sets were corrected (val: 21 rows, train: 25 rows, plus the private test key; ~160 further rows per split gained additional aliases only). Details:
+    - The ground truth now reflects the state of the world **as of 1 July 2026**: city-of-death entries for people who died 2022–2026, current stock-exchange listings (delistings such as RPS Group, Shaw Communications and Daimler/Mercedes-Benz removed; missing listings such as Bharti Airtel's NSE listing added), and award winners through the most recent editions.
+    - Award rows cleaned and completed: winning *works* (books, albums) were replaced by their authors/artists; recipients of similarly-named but distinct awards were removed (e.g. the 1945 Medal of Freedom vs the *Presidential* Medal of Freedom, the Sydney Peace Foundation Gold Medal vs the Sydney Peace *Prize*); rescinded awards are excluded; most award rows are now verified-complete winner lists.
+    - Border corrections (e.g. Djibouti +Somalia, Italy +San Marino, India −Sri Lanka) and three hectare→km² unit fixes (Fair Isle, East Rennell, Iona).
+    - Alias sets additionally include Wikipedia sitelink titles and Latin-script labels from all languages, making matching robust to name-order variants ("Krasznahorkai László" ≡ "László Krasznahorkai").
+    - `evaluate.py` normalization improved: apostrophe-like marks (`'`, `’`, `ʻ`) are dropped, **all** Unicode punctuation acts as a separator (previously ASCII-only), and case-folding is applied after Unicode decomposition (`ß` → `ss`). `O'Brien` / `O’Brien` / `OBrien` and `Kaua'i` / `Kauaʻi` / `Kauai` now all match. **Please re-download `evaluate.py`** — the change only converts former misses into matches.
 - **May 2026**: Dataset cleanup release. Changes participants should be aware of:
     - Object alias sets are now richer per entity (full Latin-language label + aliases pulled from Wikidata), giving the evaluator more matching surface area. Non-Latin scripts, social-media handles (`@...`), ordinal abbreviations (`POTUS 45`), Wikipedia list articles, and orphaned name suffixes (`Jr.`/`Sr.`) have been filtered out.
     - Subjects that previously contained raw Q-IDs (`"Q5847811 in Lima"`) are replaced with the resolved Wikidata label (`"Estadio Caballeros del Deporte in Lima"`).
@@ -106,15 +112,15 @@ Number of unique subject-entities in the data splits.
 
 ## Relation definitions
 
-These are the precise scopes used when constructing the ground truth. Models will be evaluated against these definitions, so participants should target them rather than a generic interpretation.
+These are the precise scopes used when constructing the ground truth. Models will be evaluated against these definitions, so participants should target them rather than a generic interpretation. The ground truth reflects the state of the world **as of 1 July 2026** (deaths, stock-exchange listings, award winners, and borders up to that date).
 
-- **`countryLandBordersCountry`** — countries (or comparable territories) that share a **land** border with the subject. Maritime borders (e.g. Russia–Japan, Samoa–USA) are **excluded**. Island countries without a land border have an empty answer set. Includes only currently-recognised states; deprecated/disputed border statements on Wikidata are not considered.
+- **`countryLandBordersCountry`** — countries (or comparable territories) that share a **land** border with the subject. Maritime borders (e.g. Russia–Japan, Samoa–USA) are **excluded**. Island countries without a land border have an empty answer set. Includes only currently-recognised states; deprecated/disputed border statements on Wikidata are not considered. Borders through a country's integral overseas territory count (France–Brazil via French Guiana, Morocco–Spain via Ceuta and Melilla), while borders via non-integral dependencies do not (Gibraltar, the Cyprus Sovereign Base Areas). Enclaves count (Italy–San Marino, Italy–Vatican City).
 
-- **`personHasCityOfDeath`** — the **city** where the person died. Granularity is the city, not the country or region. If the person is still living or no city is known, the answer is empty.
+- **`personHasCityOfDeath`** — the **city** where the person died. Granularity is the city (or the most specific publicly known locality), not the country or region. If the person is still living or no locality is known, the answer is empty.
 
 - **`hasCapacity`** — the **maximum spectator capacity** of the venue, expressed as an integer **number of people**. For stadiums and arenas this corresponds to Wikidata's `P1083` (maximum capacity). When multiple capacities exist (seated vs total, before/after renovation), the **highest published capacity** is used.
 
-- **`awardWonBy`** — entities that have received the specific award identified by the subject. Predecessor or successor awards (e.g. *Medal of Freedom* vs *Presidential Medal of Freedom*) are **distinct** and not bundled. Some awards have hundreds of recipients; participants should expect large object sets.
+- **`awardWonBy`** — entities that have received the specific award identified by the subject. Winners are recorded as the **recipient entities** (people, groups, organizations, projects) — not the winning works. Predecessor or successor awards (e.g. *Medal of Freedom* vs *Presidential Medal of Freedom*) are **distinct** and not bundled, and rescinded awards are excluded. Some awards have hundreds of recipients; participants should expect large object sets. For a small number of awards with very large or open-ended recipient sets (e.g. product-design awards, honorary doctorates), the gold set is necessarily partial.
 
 - **`companyTradesAtStockExchange`** — the stock exchange(s) on which the company's shares are publicly traded. Multiple listings are possible. Subsidiaries that are not separately listed have an empty answer set.
 
@@ -124,7 +130,7 @@ These are the precise scopes used when constructing the ground truth. Models wil
 
 We evaluate predictions using **macro precision, recall, and F1-score**.
 
-For **string relations**, predicted strings are normalized (lowercased, diacritics removed, punctuation stripped) and matched against the ground-truth label and its known aliases.
+For **string relations**, predicted strings are normalized (case-folded, diacritics removed, apostrophe-like marks dropped, punctuation of any script treated as whitespace) and matched against the ground-truth label and its known aliases via maximum bipartite matching — each gold entity credits at most one prediction and vice versa, independent of prediction order. Predictions are deduplicated by normalized string; note that predicting several surface forms of the *same* entity (e.g. `["NYC", "New York City"]`) counts as separate predictions and lowers precision.
 For **numeric relations** (`hasCapacity`, `hasArea`), a prediction is correct if it falls within **5% relative tolerance** of the ground-truth value.
 
 See the evaluation script ([evaluate.py](evaluate.py)) for details.
