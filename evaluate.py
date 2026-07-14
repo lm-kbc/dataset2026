@@ -1,6 +1,5 @@
 import argparse
 import json
-import string
 import unicodedata
 from pathlib import Path
 from typing import List, Dict, Union
@@ -23,14 +22,29 @@ def read_jsonl_file(file_path: Union[str, Path]) -> List[Dict]:
     return rows
 
 
+# Apostrophe-like marks: straight/curly apostrophes, okina and similar
+# modifier letters, backtick/acute used as apostrophes.
+APOSTROPHE_LIKE = set("'’‘ʻʼʹ`´")
+# ASCII symbol characters (Unicode category S, e.g. in "Canal+") that the
+# punctuation pass below would miss; treated as separators like before.
+ASCII_SYMBOLS = set("+$<=>|~^")
+
+
 def normalize_string(s: str) -> str:
-    """Lowercase, strip diacritics, remove punctuation, collapse whitespace."""
-    s = s.strip().lower()
-    s = unicodedata.normalize("NFKD", s)
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    for p in string.punctuation:
-        s = s.replace(p, " ")
-    return " ".join(s.split())
+    """Casefold, strip diacritics, drop apostrophe-like marks, replace
+    punctuation (any Unicode category P, plus ASCII symbols) with a space,
+    collapse whitespace. Dropping apostrophes (rather than spacing them) makes
+    Kaua'i / Kauaʻi / Kauai and O'Brien / O’Brien normalize identically.
+    Casefolding happens after NFKD so compatibility expansions (e.g. ™ -> TM)
+    are folded too, and ß folds to ss."""
+    s = "".join(c for c in s.strip() if c not in APOSTROPHE_LIKE)
+    s = unicodedata.normalize("NFKD", s).casefold()
+    out = []
+    for c in s:
+        if c in APOSTROPHE_LIKE or unicodedata.combining(c):
+            continue  # also catches apostrophes produced by NFKD (e.g. ʼn)
+        out.append(" " if c in ASCII_SYMBOLS or unicodedata.category(c).startswith("P") else c)
+    return " ".join("".join(out).split())
 
 
 def true_positives(preds: List[str], gts: List[List[str]], rel_type: str, tolerance: float = 0.05) -> int:
