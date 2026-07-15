@@ -186,17 +186,17 @@ python baseline.py -c configs/baseline-qwen-3.5-9b.yaml -i data/val.jsonl
 python evaluate.py -p output/baseline-qwen-3.5-9b.jsonl -g data/val.jsonl
 ```
 
-Results (validation, Participant lm-kbc, Submission ID 807745):
+Results (validation, Participant lm-kbc, Submission ID 850875):
 
 ```text
                               macro-p  macro-r  macro-f1  micro-p  micro-r  micro-f1  avg. #preds  #empty preds
-awardWonBy                      0.230    0.064     0.087    0.258    0.042     0.072       24.000             0
-companyTradesAtStockExchange    0.379    0.727     0.366    0.376    0.557     0.449        1.170             0
-countryLandBordersCountry       0.693    0.897     0.662    0.853    0.877     0.865        2.706             0
+awardWonBy                      0.247    0.078     0.101    0.279    0.046     0.079       24.000             0
+companyTradesAtStockExchange    0.369    0.725     0.354    0.368    0.551     0.441        1.170             0
+countryLandBordersCountry       0.697    0.911     0.665    0.859    0.883     0.871        2.706             0
 hasArea                         0.290    0.290     0.290    0.290    0.290     0.290        1.000             0
 hasCapacity                     0.180    0.180     0.180    0.180    0.180     0.180        1.000             0
-personHasCityOfDeath            0.180    0.630     0.180    0.180    0.327     0.232        1.000             0
-*** All Relations ***           0.319    0.511     0.308    0.390    0.165     0.232        1.759             0
+personHasCityOfDeath            0.210    0.600     0.210    0.210    0.344     0.261        1.000             0
+*** All Relations ***           0.324    0.507     0.313    0.400    0.170     0.239        1.759             0
 ```
 
 ### How to structure your prediction file
