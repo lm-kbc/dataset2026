@@ -24,6 +24,11 @@ This repository contains:
 
 ## News
 
+- **August 2026**: Subject-disambiguation release. An audit found subjects whose bare name does not identify the intended entity (thanks to the participant reports that prompted it!). **This release changes `test.jsonl` — please re-download it and regenerate predictions**; prediction files keyed by old subject strings will not match renamed rows.
+    - **51 subjects renamed** with clarifying qualifiers, 15 of them in `test.jsonl` (e.g. `Vladimir` → `Vladimir (Ikim)`, `Ireland` (hasArea) → `Republic of Ireland`, `John Lewis` → `John Lewis (civil rights leader)`, `Boa Vista` → `Boa Vista, Cape Verde`; in train/val e.g. `Taymyr` → `Lake Taymyr`, `Bernard Shaw` → `Bernard Shaw (journalist)`, `Order of the Golden Fleece` → `Order of the Golden Fleece (Georgia)`, `Foxconn` → `Hon Hai Precision Industry`). Names follow English Wikipedia article titles. The subject string plus the relation now identifies one entity; gold answers follow the named entity.
+    - **5 rows removed** (3 val, 2 test): venue rows with generic names and state-level context (e.g. `Tiger Stadium in Texas`) that cannot be resolved to a specific venue. New row counts: train 477, val 475, test 475.
+    - Verification-driven gold fixes in train/val: BDO Unibank → Philippine Stock Exchange; Orbis S.A. and Malaysia Airlines → `[]` (delisted 2020 / 2014); Hon Hai minus Hong Kong (that listing is subsidiary FIH Mobile); new Yankee Stadium capacity updated to the current configuration; Order of the Golden Fleece (Georgia) +Moshe Katsav. The July `Denmark +Canada` border addition was **reverted**: the Hans Island border runs through Greenland, a constituent country, which the border policy excludes (same rule as Netherlands–France via Sint Maarten).
+    - Clarified in [§ Relation definitions](#relation-definitions): listings via depositary receipts (ADR/GDR/CDI) on a stock exchange count as listings.
 - **July 2026**: Ground-truth quality release + evaluator update. **Splits and `test.jsonl` are unchanged** — only gold answer sets were corrected (val: 21 rows, train: 25 rows, plus the private test key; ~160 further rows per split gained additional aliases only). Details:
     - The ground truth now reflects the state of the world **as of 1 July 2026**: city-of-death entries for people who died 2022–2026, current stock-exchange listings (delistings such as RPS Group and Daimler/Mercedes-Benz removed; missing listings such as Bharti Airtel's NSE listing added), and award winners through the most recent editions.
     - Award rows cleaned and completed: winning *works* (books, albums) were replaced by their authors/artists; recipients of similarly-named but distinct awards were removed (e.g. the 1945 Medal of Freedom vs the *Presidential* Medal of Freedom); rescinded awards are excluded; most award rows are now verified-complete winner lists.
@@ -82,8 +87,8 @@ Number of unique subject-entities in the data splits.
     <tr>
         <td>hasCapacity</td>
         <td>100</td>
-        <td>100</td>
-        <td>100</td>
+        <td>97</td>
+        <td>98</td>
         <td>Object is numeric</td>
     </tr>
     <tr>
@@ -122,7 +127,7 @@ These are the precise scopes used when constructing the ground truth. Models wil
 
 - **`awardWonBy`** — entities that have received the specific award identified by the subject. Winners are recorded as the **recipient entities** (people, groups, organizations, projects) — not the winning works. Predecessor or successor awards (e.g. *Medal of Freedom* vs *Presidential Medal of Freedom*) are **distinct** and not bundled, and rescinded awards are excluded. Some awards have hundreds of recipients; participants should expect large object sets. For a small number of awards with very large or open-ended recipient sets (e.g. product-design awards, honorary doctorates), the gold set is necessarily partial.
 
-- **`companyTradesAtStockExchange`** — the stock exchange(s) on which the company's shares are publicly traded. Multiple listings are possible. Subsidiaries that are not separately listed have an empty answer set.
+- **`companyTradesAtStockExchange`** — the stock exchange(s) on which the company's shares are publicly traded. Multiple listings are possible, and listings via depositary receipts (ADR/GDR/CDI) on a stock exchange count (e.g. an LSE-traded GDR); over-the-counter venues do not. Subsidiaries that are not separately listed have an empty answer set; a listed subsidiary does not count for its parent.
 
 - **`hasArea`** — the surface area of the subject geographic entity, in **square kilometres** (km²). For countries, the **total area** (land + inland water) is used, matching the Wikidata preferred-rank value for `P2046`. Areas reported on Wikidata in hectares, square miles, etc. are converted to km².
 
